@@ -27,19 +27,22 @@ namespace Tasks.Domain
     public class UpdateTaskPayload
     {
         [Required]
-        public string Title { get; set; }
+        public required string Title { get; set; }
         [Required]
-        public string Description { get; set; }
+        public required string Description { get; set; }
         [Required]
         public bool IsCompleted { get; set; }
     }
 
     public interface TaskRepository
     {
-        void add(TodoTask task);
-        void delete(string id);
-        TodoTask? search(string id);
-        List<TodoTask> all();
-        List<TodoTask> allFromUser(string userId);
+        void Add(TodoTask task);
+        void Delete(string id);
+
+        void Update(string id, UpdateTaskPayload payload);
+
+        TodoTask? Search(string id);
+        List<TodoTask> All();
+        List<TodoTask> AllFromUser(string userId);
     }
 }

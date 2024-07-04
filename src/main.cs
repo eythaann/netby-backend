@@ -6,6 +6,11 @@ using System.Text;
 using Auth;
 using Tasks;
 
+if (Env.Config.ENVIRONMENT == "local")
+{
+    Shared.Infrastructure.Database.Initialize();
+}
+
 static void RegisterEndpoints(WebApplication app)
 {
     new AuthEndpoint("auth/v1").Register(app);

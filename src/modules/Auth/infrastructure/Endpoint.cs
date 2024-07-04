@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Application;
-using Env;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
@@ -13,7 +12,7 @@ namespace Auth
 {
     public class AuthEndpoint: BaseEndpoint
     {
-        private UserRepository repository = new HardCodedUserRepository();
+        private IUserRepository repository = new SQLServerUserRepository(Env.Config.GetConnectionString());
 
         public IResult NewUser([FromBody] RegisterPayload payload)
         {
@@ -23,11 +22,11 @@ namespace Auth
                 return Results.ValidationProblem(errors);
             }
 
-            repository.save(new User {
+            repository.Save(new User {
                 Id = Guid.NewGuid().ToString("N"),
-                Name = payload.Name ?? "",
-                Email = payload.Email ?? "",
-                Password = payload.Password ?? "",
+                Name = payload.Name,
+                Email = payload.Email,
+                Password = payload.Password,
             });
             return Results.Ok();
         }
@@ -41,8 +40,8 @@ namespace Auth
                 return Results.ValidationProblem(errors);
             }
 
-            var searched = repository.search(payload.Email);
-            if (searched?.Password != payload.Password)
+            var searched = repository.Search(payload.Email);
+            if (searched == null || searched.Password != payload.Password)
             {
                 return Results.Unauthorized();
             }
@@ -55,9 +54,9 @@ namespace Auth
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, searched?.Name ?? ""),
-                    new Claim(ClaimTypes.Email, searched?.Email ?? ""),
-                    new Claim(ClaimTypes.NameIdentifier, searched?.Id ?? "")
+                    new Claim(ClaimTypes.Name, searched.Name),
+                    new Claim(ClaimTypes.Email, searched.Email),
+                    new Claim("userId", searched.Id)
                 }),
                 Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = credentials,

@@ -1,0 +1,23 @@
+-- CREATE DATABASE [Netby-Database]
+
+-- USE [Netby-Database]
+
+CREATE TABLE [Users]
+(
+    Id NVARCHAR(100) PRIMARY KEY,
+    Name NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) NOT NULL,
+    Password NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE [Tasks]
+(
+    Id NVARCHAR(100) PRIMARY KEY,
+    UserId NVARCHAR(100) NOT NULL,
+    Title NVARCHAR(MAX) NOT NULL,
+    Description NVARCHAR(MAX),
+    CreationDate DATETIME NOT NULL,
+    ExpirationDate DATETIME NOT NULL,
+    IsCompleted BIT NOT NULL,
+    CONSTRAINT FK_Task_User FOREIGN KEY (UserId) REFERENCES [Users](Id)
+);

@@ -9,27 +9,27 @@ namespace Tasks
 {
     public class TasksEndpoint : BaseEndpoint
     {
-        private TaskRepository repository = new HardCodedTaskRepository();
+        private TaskRepository repository = new SqlServerTasksRepository(Env.Config.GetConnectionString());
 
         public IResult GetAll(ClaimsPrincipal claims)
         {
-            var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = claims.FindFirst("userId")?.Value;
             if (userId == null)
             {
                 return Results.Unauthorized();
             }
-            return Results.Json(repository.allFromUser(userId));
+            return Results.Json(repository.AllFromUser(userId));
         }
 
         public IResult GetOne(ClaimsPrincipal claims, string id)
         {
-            var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = claims.FindFirst("userId")?.Value;
             if (userId == null)
             {
                 return Results.Unauthorized();
             }
 
-            var task = repository.search(id);
+            var task = repository.Search(id);
             if (task == null)
             {
                 return Results.NotFound();
@@ -45,24 +45,24 @@ namespace Tasks
 
         public IResult CreateOne(ClaimsPrincipal claims)
         {
-            var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = claims.FindFirst("userId")?.Value;
             if (userId == null)
             {
                 return Results.Unauthorized();
             }
-            repository.add(new TodoTask(userId));
+            repository.Add(new TodoTask(userId));
             return Results.Ok();
         }
 
         public IResult DeleteOne(ClaimsPrincipal claims, string id)
         {
-            var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = claims.FindFirst("userId")?.Value;
             if (userId == null)
             {
                 return Results.Unauthorized();
             }
 
-            var task = repository.search(id);
+            var task = repository.Search(id);
             if (task == null)
             {
                 return Results.NotFound();
@@ -73,7 +73,7 @@ namespace Tasks
                 return Results.Unauthorized();
             }
 
-            repository.delete(id);
+            repository.Delete(id);
             return Results.Ok();
         }
 
@@ -85,13 +85,13 @@ namespace Tasks
                 return Results.ValidationProblem(errors);
             }
 
-            var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = claims.FindFirst("userId")?.Value;
             if (userId == null)
             {
                 return Results.Unauthorized();
             }
 
-            var task = repository.search(id);
+            var task = repository.Search(id);
             if (task == null)
             {
                 return Results.NotFound();
@@ -102,9 +102,7 @@ namespace Tasks
                 return Results.Unauthorized();
             }
 
-            task.Title = payload.Title;
-            task.Description = payload.Description;
-            task.IsCompleted = payload.IsCompleted;
+            repository.Update(id, payload);
             return Results.Ok();
         }
 

@@ -1,0 +1,37 @@
+version: "3.8"
+
+name: netby-backend
+services:
+  csharp_service:
+    container_name: csharp-service
+    depends_on:
+      - mssql
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 3001:3001
+    volumes:
+      - ../../:/usr/src/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mssql:
+    container_name: sql-server
+    image: mcr.microsoft.com/mssql/server:latest
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: netby-123
+      MSSQL_PID: Developer
+      MSSQL_AGENT_ENABLED: true
+      MSSQL_DATA_DIR: /var/opt/mssql/data
+      MSSQL_LOG_DIR: /var/opt/mssql/log
+      MSSQL_BACKUP_DIR: /var/opt/mssql/backup
+    ports:
+      - 1433:1433
+    volumes:
+      - ./data/mssql/backups:/var/opt/mssql/backups
+      - ./data/mssql/data:/var/opt/mssql/data
+      - ./data/mssql/log:/var/opt/mssql/log
